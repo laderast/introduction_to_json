@@ -1,0 +1,321 @@
+---
+title: "Introduction to JSON for the DNAnexus Platform"
+author: "Ted Laderas"
+institute: "DNAnexus"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: xaringan-themer.css
+    nature:
+      ratio: '16:9'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+
+prev_path <- Sys.getenv("PATH")
+
+Sys.setenv(PATH = paste(prev_path, "/opt/homebrew/bin/", sep = ":"))
+```
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "midnightblue",
+  header_font_google = google_font("Josefin Sans"),
+  link_color = "steelblue",
+  text_font_size = "24px",
+  footnote_font_size = "20px"
+)
+```
+
+# Learning Objectives
+
+1. **Articulate** the basic elements of JSON and explain how JSON is used on the DNAnexus platform
+2. **Describe** and **read** basic JSON structures that are used on the platform
+3. **Parse** JSON errors and responses on the platform from `dx find jobs` using `jq` and pipes
+4. **Describe** common errors in using JSON on the DNAnexus platform and describe how to fix them
+
+---
+# Refresher about DNAnexus architecture
+
+- API Server
+
+---
+# What is JSON?
+
+- **J**ava**S**cript **O**bject **N**otation
+- Common format for communicating with Application Program Interface (API) servers and receiving results/data from that API
+- Used to access DNAnexus API servers
+
+---
+class: center, middle
+# JSON is the lingua franca of the Internet
+## Master it, and you open the Internet up
+
+---
+# How is JSON used on the DNAnexus Platform?
+
+- API requests
+  - `dx find data`
+  - `dx run` 
+- API responses
+  - Job Status (`dx watch`)
+  - Job Results 
+
+---
+# Building using JSON
+  
+- Building Apps
+  - `dxapp.json` 
+  - customize your app options
+- Building Workflows
+  - `dxworkflow.json`
+  - Customizing instances for each step
+  - Specifying files/software
+---
+# Some advice
+
+- Don't write JSON by hand from scratch
+- Use an Editor!
+    - Visual Studio Code
+- Use JSON checking tools to make sure your JSON is well formed
+  
+---
+# Components of a JSON file
+
+- Containers: 
+  - `{}`
+- key:value pairs
+  - `"$dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"`
+- Lists (much like python)
+  - Used for multiple values 
+  - `["file-G4x7GX80VBzQy64k4jzgjqgY", "file-G4x7GXQ0VBzZxFxz4fqV120B"]`
+
+.footnote[http://json-schema.org/draft-04/json-schema-core.html]
+
+---
+# Anatomy of a JSON document
+
+```
+{
+  "report_html": {
+    "dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+  },
+  "stats_txt": {
+    "dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+  }
+}
+```
+---
+# key/value pairs
+
+- have the format: `"key": "value"`
+- example:
+
+```
+"dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+```
+
+---
+# key/container
+
+
+
+---
+# What is `jq`?
+
+- Command line utility for working with JSON files
+- Main functionality: filter
+- Lets you extract and manipulate elements from a json file
+
+---
+# Install `jq` on your machine
+
+- Need to have Anaconda installed first
+
+```
+conda install -c conda-forge jq
+```
+---
+# Download this project
+
+```
+
+```
+
+---
+# Try this code out - what will it extract from example.json?
+
+.pull-left[
+```
+jq '.stats_txt' data/example.json
+```
+]
+
+.pull-right[
+```
+{
+  "report_html": {
+    "dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+  },
+  "stats_txt": {
+    "dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+  }
+}
+```
+]
+---
+# Actual Output
+
+```{bash}
+jq '.stats_txt' data/example.json
+```
+
+---
+# filters
+
+- We can extract values for the different key pairs. 
+- We do this with filters
+- The following filter extracts
+
+```
+jq '.stats_txt' data/example.json
+```
+
+---
+
+---
+# Format JSON: `jq .`
+
+- First step to helping you read JSON
+- Usually responses are sent as a single line
+
+```{bash}
+echo '{"title":"This is very", "description": "hard to read" }' | jq "." 
+```
+
+---
+# `. | keys`
+
+- JSON files can be nested
+- Let's look at the first level of keys
+
+```{bash}
+jq '. | keys' data/fastqc.json 
+```
+
+---
+# JSON as input
+
+```
+dx run --json-input job_inputs.json
+```
+
+---
+# Extract the categories from `dx describe`
+
+```{bash}
+jq '.categories' data/fastqc.json
+```
+---
+
+
+---
+# Things to Try
+
+- Get the name of all of the apps run in a project:
+
+```{bash}
+dx find executions --json | jq ".[] | .name"
+```
+---
+# Get the citation for an app
+
+```{bash}
+jq '.details.citations' data/fastqc.json
+```
+
+---
+
+```{bash}
+jq '. | keys' data/rap-jobs.json
+```
+
+---
+
+```{bash}
+jq ".[] | keys" data/rap-jobs.json
+```
+
+---
+# Cycle through the 
+
+```{bash}
+jq '.name' data/job.json  
+```
+
+---
+
+```{bash}
+jq ".[].state" data/rap-jobs.json
+```
+
+---
+# Doing something with all of the jobs
+
+```{bash}
+while IFS= read -r obj; do
+    ...
+done < <(jq -c '.[]' state.json)
+
+
+```
+
+---
+
+```{bash}
+jq ".[0].trueInstanceType" data/rap-jobs.json
+```
+
+---
+# Piping `dx describe` into `jq`
+
+- Find all inputs set for a job, including default values set by the application
+
+```{bash}
+dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .input
+```
+
+---
+# Piping is cool
+
+- Find all outputs set for a job
+
+```{bash}
+dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .output
+```
+
+---
+# Find all inputs for an app
+
+```{bash}
+jq '.inputSpec' data/dxapp.json
+```
+
+---
+# Find all generated outputs for a job
+
+```{bash}
+jq '.output' data/job.json
+```
+
+---
+# Why is this useful?
+
+- Reading and modifying JSON is at the heart of building apps
+- Understanding JSON responses from the API will help you debug stuff

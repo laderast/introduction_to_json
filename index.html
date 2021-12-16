@@ -1,0 +1,2066 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Introduction to JSON for the DNAnexus Platform</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Ted Laderas" />
+    <meta name="date" content="2021-12-16" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Introduction to JSON for the DNAnexus Platform
+### Ted Laderas
+### DNAnexus
+### 2021-12-16
+
+---
+
+
+
+
+
+
+# Learning Objectives
+
+1. **Articulate** the basic elements of JSON and explain how JSON is used on the DNAnexus platform
+2. **Describe** and **read** basic JSON structures that are used on the platform
+3. **Parse** JSON errors and responses on the platform from `dx find jobs` using `jq` and pipes
+4. **Describe** common errors in using JSON on the DNAnexus platform and describe how to fix them
+
+---
+# Refresher about DNAnexus architecture
+
+- API Server
+
+---
+# What is JSON?
+
+- **J**ava**S**cript **O**bject **N**otation
+- Common format for communicating with Application Program Interface (API) servers and receiving results/data from that API
+- Used to access DNAnexus API servers
+
+---
+class: center, middle
+# JSON is the lingua franca of the Internet
+## Master it, and you open the Internet up
+
+---
+# How is JSON used on the DNAnexus Platform?
+
+- API requests
+  - `dx find data`
+  - `dx run` 
+- API responses
+  - Job Status (`dx watch`)
+  - Job Results 
+
+---
+# Building using JSON
+  
+- Building Apps
+  - `dxapp.json` 
+  - customize your app options
+- Building Workflows
+  - `dxworkflow.json`
+  - Customizing instances for each step
+  - Specifying files/software
+---
+# Some advice
+
+- Don't write JSON by hand from scratch
+- Use an Editor!
+    - Visual Studio Code
+- Use JSON checking tools to make sure your JSON is well formed
+  
+---
+# Components of a JSON file
+
+- Containers: 
+  - `{}`
+- key:value pairs
+  - `"$dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"`
+- Lists
+  - Used for multiple values
+  - `["file-G4x7GX80VBzQy64k4jzgjqgY", "file-G4x7GXQ0VBzZxFxz4fqV120B"]`
+
+.footnote[http://json-schema.org/draft-04/json-schema-core.html]
+
+---
+# Anatomy of a JSON document
+
+```
+{
+  "report_html": {
+    "dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+  },
+  "stats_txt": {
+    "dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+  }
+}
+```
+
+---
+# What is `jq`?
+
+- Command line utility for working with JSON files
+- Main functionality: filter
+- Lets you extract and manipulate elements from a json file
+
+---
+# Install `jq` on your machine
+
+- Need to have Anaconda installed first
+
+```
+conda install -c conda-forge jq
+```
+---
+# Download this project
+
+```
+dx download 
+```
+
+---
+# Try this code out
+
+
+```bash
+jq '.stats_txt' data/example.json
+```
+
+```
+## {
+##   "dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+## }
+```
+
+---
+# Format JSON: `jq .`
+
+
+```bash
+jq "." data/fastqc.json
+```
+
+```
+## {
+##   "id": "app-G4YyQ9044b90F1vG8y9YkKk3",
+##   "class": "app",
+##   "billTo": "org-dnanexus_apps",
+##   "created": 1630005284000,
+##   "modified": 1630018038677,
+##   "createdBy": "user-yshi",
+##   "name": "fastqc",
+##   "version": "3.0.2",
+##   "aliases": [
+##     "3.0.2",
+##     "default"
+##   ],
+##   "deleted": false,
+##   "region": "aws:us-east-1",
+##   "applet": "applet-G4YyQ8j0PJkv8xFY8yXG84kf",
+##   "regionalOptions": {
+##     "aws:eu-central-1": {
+##       "applet": "applet-G4YyQ904X2gGx25x8x6yzF7F",
+##       "resources": "container-G4YyQ904qG50F1vG8y9YkKk5"
+##     },
+##     "aws:eu-west-2": {
+##       "applet": "applet-G4YyQ90JPyV93vpj8yKvx250",
+##       "resources": "container-G4YyQ90J10Q0F1vG8y9YkKk4"
+##     },
+##     "aws:eu-west-2-g": {
+##       "applet": "applet-G4YyQ92KFKK5459Z8y85GzpZ",
+##       "resources": "container-G4YyQ92Kq9x0F1vG8y9YkKkB"
+##     },
+##     "azure:westeurope": {
+##       "applet": "applet-G4YyQ90BPbq1YQPf8xb6KZpk",
+##       "resources": "container-G4YyQ90B6vQQF1vG8y9YkKkF"
+##     },
+##     "aws:ap-southeast-2": {
+##       "applet": "applet-G4YyQ905j21GBZ0XJ9ffvj8B",
+##       "resources": "container-G4YyQ905030QF1vG8y9YkKkQ"
+##     },
+##     "aws:us-east-1": {
+##       "applet": "applet-G4YyQ8j0PJkv8xFY8yXG84kf",
+##       "resources": "container-G4YyQ9002770F1vG8y9YkKkV"
+##     },
+##     "aws:cn-north-1": {
+##       "applet": "applet-G4YyQ9022PZG8xFY8yXG84kj",
+##       "resources": "container-G4YyQ9825by0F1vG8y9YkKkZ"
+##     },
+##     "azure:westus": {
+##       "applet": "applet-G4YyQ909qGK1YQPf8xb6KZpq",
+##       "resources": "container-G4YyQ989yppQF1vG8y9YkKkg"
+##     }
+##   },
+##   "openSource": true,
+##   "ignoreReuse": false,
+##   "installed": true,
+##   "installs": 1341,
+##   "published": 1630018038677,
+##   "isDeveloperFor": false,
+##   "authorizedUsers": [
+##     "PUBLIC"
+##   ],
+##   "dxapi": "1.0.0",
+##   "title": "FastQC Reads Quality Control",
+##   "summary": "Generates a QC report on reads data",
+##   "description": "# FastQC Reads Quality Control\n\n## What does this app do?\n\nThis app generates a quality control (QC) report on reads data.\n\n## What are typical use cases for this app?\n\nThis app is typically used after sequencing, to generate a QC report on the reads. As the FastQC manual says, \"before analysing\nreads to draw biological conclusions, you should always perform some simple quality control checks to ensure\nthat the raw data looks good and there are no problems or biases in your data which may affect how you can usefully use it.\"\n\n## What data are required for this app to run?\n\nThis app requires reads data, in any of the following formats:\n\n- Gzipped FASTQ files (`*.fq.gz` or `*.fastq.gz`)\n- BAM files (`*.bam`)\n\n## What does this app output?\n\nThis app outputs an HTML report that illustrates several metrics. For detailed information about the analysis modules included\nin the report, consult the FastQC manual at:\n\nhttp://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/\n\nThe QC stats are also output as a machine-readable text file.\n\n## How does this app work?\n\nThis app runs FastQC, which analyzes the read data using various modules. The app returns the QC stats text file, exactly as generated by FastQC.\n\n## Examples\n\n| Your goal | Input reads file | Input kmer size| Output report file |\n| --- | --- | --- | --- |\n| Generate a QC html report for a fastq file | `reads.fastq.gz` | `8` | `reads.stats-fastqc.html` |\n| Generate a QC html report for a bam file | `reads2.bam` | `8` | `reads2.stats-fastqc.html` |\n\n\nGenerate a QC html report:\n\n| Input reads file | Input kmer size| Output report file |\n| --- | --- | --- |\n| `reads.fastq.gz` | `8` | `reads.stats-fastqc.html` |\n\nGenerate a QC html report and text stats with custom contaminants using 1 thread:\n\n| Input reads file | Input custom contaminants | Input Extra Options | Output report file | Output stats text file |\n| --- | --- | --- | --- | --- |\n| `reads.fastq.gz` | `contaminants_txt`  | `-t 1` | `reads.stats-fastqc.html` | `reads.stats-fastqc.txt`|",
+##   "developerNotes": "",
+##   "access": {
+##     "network": []
+##   },
+##   "lineItemPerTest": null,
+##   "inputSpec": [
+##     {
+##       "name": "reads",
+##       "class": "file",
+##       "label": "Reads",
+##       "help": "A file containing the reads to be checked. Accepted formats are gzipped-FASTQ and BAM.",
+##       "patterns": [
+##         "*.fq.gz",
+##         "*.fastq.gz",
+##         "*.sam",
+##         "*.bam"
+##       ]
+##     },
+##     {
+##       "name": "contaminants_txt",
+##       "class": "file",
+##       "label": "Custom contaminants",
+##       "help": "(Optional) A special file containing custom contaminant sequences to screen overrepresented sequences against. If left empty, a default set of contaminants that comes with the FastQC package will be used. If provided, this file must be a text file with two tab-delimited columns: name (such as 'Truseq Adapter') and DNA sequence (such as 'TATCTCGTATG').",
+##       "optional": true,
+##       "patterns": [
+##         "*.fastqc_contaminants.txt"
+##       ]
+##     },
+##     {
+##       "name": "adapters_txt",
+##       "class": "file",
+##       "label": "Custom adapters",
+##       "help": "(Optional) A special file containing custom adapter sequences which will be explicity searched against the library. If left empty, a default set of adapters that comes with the FastQC package will be used. If provided, this file must be a text file with two tab-delimited columns: name (such as 'Nextera Transposase Sequence') and DNA sequence (such as 'CTGTCTCTTATA').",
+##       "optional": true,
+##       "patterns": [
+##         "*.fastqc_adapters.txt"
+##       ]
+##     },
+##     {
+##       "name": "limits_txt",
+##       "class": "file",
+##       "label": "Custom limits",
+##       "help": "(Optional) A special file containing a set of criteria which will be used to determine the warn/error limits for the various modules, or selectively remove some modules from the output altogether. For an example of a limits file, refer to the limits.txt file in the FastQC sources.",
+##       "optional": true,
+##       "patterns": [
+##         "*.fastqc_limits.txt"
+##       ]
+##     },
+##     {
+##       "name": "format",
+##       "class": "string",
+##       "default": "auto",
+##       "label": "Input format",
+##       "help": "The format of the input file. By default FastQC will try to automatically detect the format based on the input filename. You can override this by choosing a specific format (fastq, bam, or bam_mapped). For BAM files, choose bam if you want all the entries to be processed, or bam_mapped if you want only the mapped entries to be processed.",
+##       "group": "Advanced",
+##       "choices": [
+##         "auto",
+##         "fastq",
+##         "bam",
+##         "bam_mapped"
+##       ]
+##     },
+##     {
+##       "name": "kmer_size",
+##       "class": "int",
+##       "default": 7,
+##       "label": "Kmer size",
+##       "help": "The kmer size that the kmer analysis module will use. This module reports overrepresented k-mers (sequences of size 'k'). This size must be between 2 and 10 (default is 7).",
+##       "group": "Advanced"
+##     },
+##     {
+##       "name": "nogroup",
+##       "class": "boolean",
+##       "default": true,
+##       "label": "Disable grouping of bases past 50bp?",
+##       "help": "Disable grouping of bases for reads &gt;50bp. All reports will show data for every base in the read. WARNING: Using this option may cause fastqc to slow down or crash if used on really long reads, and resulting plots may be too large for practical viewing.",
+##       "group": "Advanced"
+##     },
+##     {
+##       "name": "extra_options",
+##       "class": "string",
+##       "label": "Extra command-line options",
+##       "help": "(Optional) Extra command-line options that will be passed directly to the fastqc invocation. Example: --nofilter.",
+##       "optional": true,
+##       "group": "Advanced"
+##     }
+##   ],
+##   "outputSpec": [
+##     {
+##       "name": "report_html",
+##       "class": "file",
+##       "label": "FastQC Report",
+##       "help": "An html file archive containing the report as generated by FastQC.",
+##       "patterns": [
+##         "*.stats-fastqc.html"
+##       ]
+##     },
+##     {
+##       "name": "stats_txt",
+##       "class": "file",
+##       "label": "FastQC Stats",
+##       "help": "A text file containing the machine-readable statistics as generated by FastQC.",
+##       "patterns": [
+##         "*.stats-fastqc.txt"
+##       ]
+##     }
+##   ],
+##   "runSpec": {
+##     "interpreter": "bash",
+##     "bundledDependsByRegion": {
+##       "aws:eu-central-1": [
+##         {
+##           "name": "resources.tar.gz",
+##           "id": {
+##             "$dnanexus_link": "file-G4YyPP84X2g1BGgF0x5YJV2q"
+##           }
+##         }
+##       ],
+##       "aws:eu-west-2": [
+##         {
+##           "name": "resources.tar.gz",
+##           "id": {
+##             "$dnanexus_link": "file-G4YyPX0JPyV45b60JyXk69Gq"
+##           }
+##         }
+##       ],
+##       "aws:eu-west-2-g": [
+##         {
+##           "name": "resources.tar.gz",
+##           "id": {
+##             "$dnanexus_link": "file-G4YyPZpKFKK242b41g6pjpGv"
+##           }
+##         }
+##       ],
+##       "azure:westeurope": [
+##         {
+##           "name": "resources.tar.gz",
+##           "id": {
+##             "$dnanexus_link": "file-G4YyPgQBPbq0kxg9JyGG48gV"
+##           }
+##         }
+##       ],
+##       "aws:ap-southeast-2": [
+##         {
+##           "name": "resources.tar.gz",
+##           "id": {
+##             "$dnanexus_link": "file-G4YyPp05j2184Xpb9b16k30Y"
+##           }
+##         }
+##       ],
+##       "aws:cn-north-1": [
+##         {
+##           "name": "resources.tar.gz",
+##           "id": {
+##             "$dnanexus_link": "file-G4YyPyQ22PZ7Z36FJyYkvXgG"
+##           }
+##         }
+##       ],
+##       "aws:us-east-1": [
+##         {
+##           "name": "resources.tar.gz",
+##           "id": {
+##             "$dnanexus_link": "file-G4YyPJ00PJkZ5b60JyXk69Gb"
+##           }
+##         }
+##       ],
+##       "azure:westus": [
+##         {
+##           "name": "resources.tar.gz",
+##           "id": {
+##             "$dnanexus_link": "file-G4YyQ7Q9qGKGxx62JyJfBpZ9"
+##           }
+##         }
+##       ]
+##     },
+##     "systemRequirements": {
+##       "*": {
+##         "instanceType": "mem1_ssd1_v2_x4"
+##       }
+##     },
+##     "executionPolicy": {},
+##     "timeoutPolicy": {
+##       "*": {
+##         "hours": 24
+##       }
+##     },
+##     "bundledDepends": [
+##       {
+##         "name": "resources.tar.gz",
+##         "id": {
+##           "$dnanexus_link": "file-G4YyPP84X2g1BGgF0x5YJV2q"
+##         }
+##       }
+##     ],
+##     "execDepends": [
+##       {
+##         "name": "dx-toolkit",
+##         "package_manager": "apt"
+##       }
+##     ],
+##     "distribution": "Ubuntu",
+##     "release": "16.04",
+##     "version": "1",
+##     "systemRequirementsByRegion": {
+##       "aws:eu-central-1": {
+##         "*": {
+##           "instanceType": "mem1_ssd1_v2_x4"
+##         }
+##       },
+##       "aws:eu-west-2": {
+##         "*": {
+##           "instanceType": "mem1_ssd1_v2_x4"
+##         }
+##       },
+##       "aws:eu-west-2-g": {
+##         "*": {
+##           "instanceType": "mem1_ssd1_v2_x4"
+##         }
+##       },
+##       "azure:westeurope": {
+##         "*": {
+##           "instanceType": "azure:mem2_ssd1_x4"
+##         }
+##       },
+##       "aws:ap-southeast-2": {
+##         "*": {
+##           "instanceType": "mem1_ssd1_v2_x4"
+##         }
+##       },
+##       "aws:us-east-1": {
+##         "*": {
+##           "instanceType": "mem1_ssd1_v2_x4"
+##         }
+##       },
+##       "aws:cn-north-1": {
+##         "*": {
+##           "instanceType": "mem1_ssd1_v2_x4"
+##         }
+##       },
+##       "azure:westus": {
+##         "*": {
+##           "instanceType": "azure:mem2_ssd1_x4"
+##         }
+##       }
+##     }
+##   },
+##   "details": {
+##     "whatsNew": "* 3.0.2: Enabled in Europe (London) region.\n* 3.0.1: Minor fix: added custom adapters, contaminants, and limits.\n* 3.0.0: Update version of fastqc to 0.11.9.\n* 2.4.1: Update upstream license documentation\n* 2.4.0: Updated to FastQC 0.11.8\n* 2.3.1: Adding region azure:westeurope\n* 2.3.0: App updated to use Ubuntu 14.04 instances\n* 2.2.0: Updated to FastQC 0.11.3; changed default instance type\n* 2.1.0: Updated to FastQC 0.11.2; changed default values for the 'kmer_size' and 'nogroup' parameters\n* 2.0.1: Fixed error when mid line is null\n* 2.0.0: Changing output spec to TXT and HTML files",
+##     "upstreamProjects": [
+##       {
+##         "licenseUrl": "https://github.com/s-andrews/FastQC/blob/v0.11.9/LICENSE.txt",
+##         "repoUrl": "https://github.com/s-andrews/FastQC",
+##         "version": "0.11.9",
+##         "license": "GPLv3",
+##         "author": "Simon Andrews",
+##         "name": "FastQC"
+##       }
+##     ],
+##     "citations": [
+##       "Andrews S. (2010). FastQC: a quality control tool for high throughput sequence data. Available online at: http://www.bioinformatics.babraham.ac.uk/projects/fastqc"
+##     ]
+##   },
+##   "categories": [
+##     "Read QC",
+##     "Statistics"
+##   ],
+##   "resources": "container-G4YyQ9002770F1vG8y9YkKkV"
+## }
+```
+---
+# `. | keys`
+
+- JSON files are nested
+- Let's look at the first level of keys
+
+
+```bash
+jq '. | keys' data/fastqc.json 
+```
+
+```
+## [
+##   "access",
+##   "aliases",
+##   "applet",
+##   "authorizedUsers",
+##   "billTo",
+##   "categories",
+##   "class",
+##   "created",
+##   "createdBy",
+##   "deleted",
+##   "description",
+##   "details",
+##   "developerNotes",
+##   "dxapi",
+##   "id",
+##   "ignoreReuse",
+##   "inputSpec",
+##   "installed",
+##   "installs",
+##   "isDeveloperFor",
+##   "lineItemPerTest",
+##   "modified",
+##   "name",
+##   "openSource",
+##   "outputSpec",
+##   "published",
+##   "region",
+##   "regionalOptions",
+##   "resources",
+##   "runSpec",
+##   "summary",
+##   "title",
+##   "version"
+## ]
+```
+
+---
+
+
+```bash
+jq '.categories' data/fastqc.json
+```
+
+```
+## [
+##   "Read QC",
+##   "Statistics"
+## ]
+```
+---
+# Things to Try
+
+- Get the name of all of the apps run in a project:
+
+
+```bash
+dx find executions --json | jq ".[] | .name"
+```
+
+```
+## "Swiss Army Knife"
+## "Swiss Army Knife"
+## "Swiss Army Knife"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "ttyd"
+```
+---
+# Get the citation for an app
+
+
+```bash
+jq '.details.citations' data/fastqc.json
+```
+
+```
+## [
+##   "Andrews S. (2010). FastQC: a quality control tool for high throughput sequence data. Available online at: http://www.bioinformatics.babraham.ac.uk/projects/fastqc"
+## ]
+```
+
+---
+
+
+```bash
+jq '. | keys' data/rap-jobs.json
+```
+
+```
+## [
+##   0,
+##   1,
+##   2,
+##   3,
+##   4,
+##   5,
+##   6,
+##   7,
+##   8,
+##   9,
+##   10,
+##   11,
+##   12,
+##   13,
+##   14,
+##   15,
+##   16,
+##   17,
+##   18,
+##   19
+## ]
+```
+
+---
+
+
+```bash
+jq ".[] | keys" data/rap-jobs.json
+```
+
+```
+## [
+##   "analysis",
+##   "app",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "projectCache",
+##   "properties",
+##   "rank",
+##   "region",
+##   "resources",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "app",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "outputReusedFrom",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "projectCache",
+##   "properties",
+##   "rank",
+##   "region",
+##   "resources",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime"
+## ]
+## [
+##   "analysis",
+##   "app",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "outputReusedFrom",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "projectCache",
+##   "properties",
+##   "rank",
+##   "region",
+##   "resources",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "app",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "host",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "projectCache",
+##   "properties",
+##   "rank",
+##   "region",
+##   "resources",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+## [
+##   "analysis",
+##   "applet",
+##   "billTo",
+##   "class",
+##   "costLimit",
+##   "created",
+##   "currency",
+##   "debug",
+##   "delayWorkspaceDestruction",
+##   "dependsOn",
+##   "detachedFrom",
+##   "details",
+##   "egressComputedAt",
+##   "egressReport",
+##   "executable",
+##   "executableName",
+##   "executionPolicy",
+##   "failureCounts",
+##   "failureFrom",
+##   "failureMessage",
+##   "failureReason",
+##   "finalPriority",
+##   "folder",
+##   "function",
+##   "httpsApp",
+##   "id",
+##   "ignoreReuse",
+##   "instanceType",
+##   "invoiceMetadata",
+##   "isFree",
+##   "launchedBy",
+##   "modified",
+##   "name",
+##   "networkAccess",
+##   "originJob",
+##   "parentAnalysis",
+##   "parentJob",
+##   "priceComputedAt",
+##   "priority",
+##   "project",
+##   "properties",
+##   "rank",
+##   "region",
+##   "rootExecution",
+##   "singleContext",
+##   "stage",
+##   "startedRunning",
+##   "state",
+##   "stateTransitions",
+##   "stoppedRunning",
+##   "systemRequirements",
+##   "tags",
+##   "timeout",
+##   "totalEgress",
+##   "totalPrice",
+##   "trueInstanceType",
+##   "workerReuseDeadlineRunTime",
+##   "workspace"
+## ]
+```
+
+---
+# Cycle through the 
+
+
+```bash
+jq '.name' data/job.json  
+```
+
+```
+## "FastQC Reads Quality Control"
+```
+
+---
+
+
+```bash
+jq ".failureCounts" data/job.json
+```
+
+```
+## {}
+```
+
+---
+
+
+```bash
+jq ".[0].trueInstanceType" data/rap-jobs.json
+```
+
+```
+## "dx_s_c5.xlarge_v2"
+```
+
+---
+# Piping `dx describe` into `jq`
+
+- Find all inputs set for a job, including default values set by the application
+
+
+```bash
+dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .input
+```
+
+```
+## {
+##   "reads": {
+##     "$dnanexus_link": "file-BQbXKk80fPFj4Jbfpxb6Ffv2"
+##   },
+##   "format": "auto",
+##   "kmer_size": 7,
+##   "nogroup": true
+## }
+```
+
+---
+# Piping is cool
+
+- Find all outputs set for a job
+
+
+```bash
+dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .output
+```
+
+```
+## {
+##   "report_html": {
+##     "$dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+##   },
+##   "stats_txt": {
+##     "$dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+##   }
+## }
+```
+
+---
+# Find all inputs for an app
+
+
+```bash
+jq '.inputSpec' data/dxapp.json
+```
+
+```
+## [
+##   {
+##     "name": "mappings_cram",
+##     "label": "CRAM file",
+##     "help": "",
+##     "class": "file",
+##     "patterns": [
+##       "*.cram"
+##     ],
+##     "optional": false
+##   }
+## ]
+```
+
+---
+# Find all generated outputs for a job
+
+
+```bash
+jq '.output' data/job.json
+```
+
+```
+## {
+##   "report_html": {
+##     "$dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+##   },
+##   "stats_txt": {
+##     "$dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+##   }
+## }
+```
+
+---
+# Why is this useful?
+
+- Reading and modifying JSON is at the heart of building apps
+- Understanding JSON responses from the API will help you debug stuff
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
