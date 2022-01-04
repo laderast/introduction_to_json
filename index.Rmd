@@ -12,6 +12,8 @@ output:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+  powerpoint_presentation:
+    slide_level: 1
 ---
 
 ```{r setup, include=FALSE}
@@ -35,15 +37,17 @@ style_mono_accent(
 
 # Learning Objectives
 
-1. **Articulate** the basic elements of JSON and explain how JSON is used on the DNAnexus platform
-2. **Describe** and **read** basic JSON structures that are used on the platform
-3. **Parse** JSON errors and responses on the platform from `dx find jobs` using `jq` and pipes
-4. **Describe** common errors in using JSON on the DNAnexus platform and describe how to fix them
+1. **Explain** how JSON is used on the DNAnexus platform
+2. **Articulate** the basic elements of JSON
+3. **Describe** and **read** basic JSON structures that are used on the platform
+4. **Parse** JSON responses from the platform using `jq` and pipes
 
 ---
 # Refresher about DNAnexus architecture
 
+- Your computer
 - API Server
+- Worker
 
 ---
 # What is JSON?
@@ -53,38 +57,17 @@ style_mono_accent(
 - Used to access DNAnexus API servers
 
 ---
-class: center, middle
-# JSON is the lingua franca of the Internet
-## Master it, and you open the Internet up
+# Why is knowing about JSON useful?
 
+- Reading and modifying JSON is at the heart of building and running apps
+- Understanding JSON responses from the API will help you debug jobs
+- Batch submissions: running the same app on multiple files
+    - Find which jobs have failed and why
+    - Run the failed jobs again
+    
 ---
-# How is JSON used on the DNAnexus Platform?
+# Whether we use the UI or the command line, we are communicating with the platform using JSON
 
-- API requests
-  - `dx find data`
-  - `dx run` 
-- API responses
-  - Job Status (`dx watch`)
-  - Job Results 
-
----
-# Building using JSON
-  
-- Building Apps
-  - `dxapp.json` 
-  - customize your app options
-- Building Workflows
-  - `dxworkflow.json`
-  - Customizing instances for each step
-  - Specifying files/software
----
-# Some advice
-
-- Don't write JSON by hand from scratch
-- Use an Editor!
-    - Visual Studio Code
-- Use JSON checking tools to make sure your JSON is well formed
-  
 ---
 # Components of a JSON file
 
@@ -92,11 +75,27 @@ class: center, middle
   - `{}`
 - key:value pairs
   - `"$dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"`
-- Lists (much like python)
-  - Used for multiple values 
-  - `["file-G4x7GX80VBzQy64k4jzgjqgY", "file-G4x7GXQ0VBzZxFxz4fqV120B"]`
 
 .footnote[http://json-schema.org/draft-04/json-schema-core.html]
+
+---
+# key/value pairs
+
+- have the format: `"key": "value"`
+- example:
+
+```
+"dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+```
+---
+# key/container
+
+```
+"report_html": {
+    "dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+  }
+```
+
 
 ---
 # Anatomy of a JSON document
@@ -111,21 +110,36 @@ class: center, middle
   }
 }
 ```
----
-# key/value pairs
-
-- have the format: `"key": "value"`
-- example:
-
-```
-"dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
-```
 
 ---
-# key/container
+# Building using JSON
+  
+- Building Apps
+  - `dxapp.json` 
+  - customize your app options
+- Building Workflows
+  - `dxworkflow.json`
+  - Customizing instances for each step
+  - Specifying files/software
 
+---
+# How is JSON used on the DNAnexus Platform?
 
+- API requests
+  - `dx find data`
+  - `dx run` 
+- API responses
+  - Job Status (`dx watch`)
+  - Job Results 
 
+---
+# Some advice
+
+- Don't write JSON by hand from scratch
+- Use an Editor!
+    - Visual Studio Code
+- Use JSON checking tools to make sure your JSON is well formed
+  
 ---
 # What is `jq`?
 
@@ -141,11 +155,26 @@ class: center, middle
 ```
 conda install -c conda-forge jq
 ```
+
 ---
-# Download this project
+# filters - get first level
 
 ```
+jq ".report_html" example.json
+```
 
+```
+{
+  "report_html": {
+    "dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+  }
+}
+```
+
+```
+{
+"dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+}
 ```
 
 ---
@@ -177,17 +206,31 @@ jq '.stats_txt' data/example.json
 ```
 
 ---
-# filters
+# Going down a level
 
-- We can extract values for the different key pairs. 
-- We do this with filters
-- The following filter extracts
+.pull-left[
+```
+jq '.stats_txt.dnanexus_link' data/example.json
+```
+]
 
+.pull-right[
 ```
-jq '.stats_txt' data/example.json
+{
+  "stats_txt": {
+    "dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+  }
+}
 ```
+]
 
 ---
+# Actual output
+
+```{bash}
+jq '.stats_txt.dnanexus_link' data/example.json
+```
+
 
 ---
 # Format JSON: `jq .`
@@ -222,8 +265,6 @@ dx run --json-input job_inputs.json
 ```{bash}
 jq '.categories' data/fastqc.json
 ```
----
-
 
 ---
 # Things to Try
@@ -241,6 +282,7 @@ jq '.details.citations' data/fastqc.json
 ```
 
 ---
+# Find all the first-level keys
 
 ```{bash}
 jq '. | keys' data/rap-jobs.json
@@ -253,13 +295,14 @@ jq ".[] | keys" data/rap-jobs.json
 ```
 
 ---
-# Cycle through the 
+# Cycle through the app names
 
 ```{bash}
-jq '.name' data/job.json  
+jq '.name' data/jobs.json  
 ```
 
 ---
+# Find the state of all jobs
 
 ```{bash}
 jq ".[].state" data/rap-jobs.json
@@ -268,18 +311,20 @@ jq ".[].state" data/rap-jobs.json
 ---
 # Doing something with all of the jobs
 
-```{bash}
+```
 while IFS= read -r obj; do
     ...
-done < <(jq -c '.[]' state.json)
-
-
+done < <(jq -c '.[]' data/rap-jobs.json)
 ```
 
 ---
+# Piping 
 
-```{bash}
-jq ".[0].trueInstanceType" data/rap-jobs.json
+- Pipe the output of `dx describe` into `jq`
+- Find all outputs set for a job
+
+```
+dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .output
 ```
 
 ---
@@ -291,14 +336,6 @@ jq ".[0].trueInstanceType" data/rap-jobs.json
 dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .input
 ```
 
----
-# Piping is cool
-
-- Find all outputs set for a job
-
-```{bash}
-dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .output
-```
 
 ---
 # Find all inputs for an app
@@ -315,7 +352,6 @@ jq '.output' data/job.json
 ```
 
 ---
-# Why is this useful?
-
-- Reading and modifying JSON is at the heart of building apps
-- Understanding JSON responses from the API will help you debug stuff
+class: center, middle
+# JSON is the lingua franca of the Internet
+## Master it, and you open the Internet up
