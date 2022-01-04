@@ -147,14 +147,6 @@ style_mono_accent(
 - Main functionality: filter
 - Lets you extract and manipulate elements from a json file
 
----
-# Install `jq` on your machine
-
-- Need to have Anaconda installed first
-
-```
-conda install -c conda-forge jq
-```
 
 ---
 # filters - get first level
@@ -231,17 +223,6 @@ jq '.stats_txt.dnanexus_link' data/example.json
 jq '.stats_txt.dnanexus_link' data/example.json
 ```
 
-
----
-# Format JSON: `jq .`
-
-- First step to helping you read JSON
-- Usually responses are sent as a single line
-
-```{bash}
-echo '{"title":"This is very", "description": "hard to read" }' | jq "." 
-```
-
 ---
 # `. | keys`
 
@@ -267,6 +248,64 @@ jq '.categories' data/fastqc.json
 ```
 
 ---
+# Piping 
+
+- Pipe the output of `dx describe` into `jq`
+- Find all outputs set for a job
+
+```
+dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .output
+```
+
+---
+# Piping `dx describe` into `jq`
+
+- Find all inputs set for a job, including default values set by the application
+
+```{bash}
+dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .input
+```
+
+---
+# Find all inputs for an app
+
+```{bash}
+jq '.inputSpec' data/dxapp.json
+```
+
+---
+# Find all generated outputs for a job
+
+```{bash}
+jq '.output' data/job.json
+```
+
+---
+class: center, middle
+# JSON is the lingua franca of the Internet
+## Master it, and you open the Internet up
+
+---
+# Install `jq` on your machine
+
+- Need to have Anaconda installed first
+
+```
+conda install -c conda-forge jq
+```
+---
+# Clone the repository 
+
+```
+git clone https://github.com/laderast/introduction_to_json
+```
+
+
+---
+class: center, middle
+# Going Further
+
+---
 # Things to Try
 
 - Get the name of all of the apps run in a project:
@@ -274,6 +313,16 @@ jq '.categories' data/fastqc.json
 ```{bash}
 dx find executions --json | jq ".[] | .name"
 ```
+---
+# Format JSON: `jq .`
+
+- First step to helping you read JSON
+- Usually responses are sent as a single line
+
+```{bash}
+echo '{"title":"This is very", "description": "hard to read" }' | jq "." 
+```
+
 ---
 # Get the citation for an app
 
@@ -284,7 +333,7 @@ jq '.details.citations' data/fastqc.json
 ---
 # Find all the first-level keys
 
-```{bash}
+```
 jq '. | keys' data/rap-jobs.json
 ```
 
@@ -294,7 +343,7 @@ jq '. | keys' data/rap-jobs.json
 jq ".[] | keys" data/rap-jobs.json
 ```
 
----
+a---
 # Cycle through the app names
 
 ```{bash}
@@ -317,41 +366,3 @@ while IFS= read -r obj; do
 done < <(jq -c '.[]' data/rap-jobs.json)
 ```
 
----
-# Piping 
-
-- Pipe the output of `dx describe` into `jq`
-- Find all outputs set for a job
-
-```
-dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .output
-```
-
----
-# Piping `dx describe` into `jq`
-
-- Find all inputs set for a job, including default values set by the application
-
-```{bash}
-dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .input
-```
-
-
----
-# Find all inputs for an app
-
-```{bash}
-jq '.inputSpec' data/dxapp.json
-```
-
----
-# Find all generated outputs for a job
-
-```{bash}
-jq '.output' data/job.json
-```
-
----
-class: center, middle
-# JSON is the lingua franca of the Internet
-## Master it, and you open the Internet up
