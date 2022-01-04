@@ -4,7 +4,7 @@
     <title>Introduction to JSON for the DNAnexus Platform</title>
     <meta charset="utf-8" />
     <meta name="author" content="Ted Laderas" />
-    <meta name="date" content="2021-12-16" />
+    <meta name="date" content="2022-01-04" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
   </head>
@@ -15,7 +15,7 @@ class: center, middle, inverse, title-slide
 # Introduction to JSON for the DNAnexus Platform
 ### Ted Laderas
 ### DNAnexus
-### 2021-12-16
+### 2022-01-04
 
 ---
 
@@ -26,16 +26,34 @@ class: center, middle, inverse, title-slide
 
 # Learning Objectives
 
-1. **Articulate** the basic elements of JSON and explain how JSON is used on the DNAnexus platform
-2. **Describe** and **read** basic JSON structures that are used on the platform
-3. **Parse** JSON errors and responses on the platform from `dx find jobs` using `jq` and pipes
-4. **Describe** common errors in using JSON on the DNAnexus platform and describe how to fix them
+1. **Explain** how JSON is used on the DNAnexus platform
+2. **Articulate** the basic elements of JSON
+3. **Describe** and **read** basic JSON structures that are used on the platform
+4. **Parse** JSON responses from the platform using `jq` and pipes
 
 ---
 # Refresher about DNAnexus architecture
 
+- Your computer
 - API Server
+- Worker
 
+---
+# `ttyd`: useful app on the platform
+
+- Lets you open up a terminal window on a DNAnexus Worker
+- Practice your DNAnexus CLI commands here
+  - `dx download`/`dx upload`
+- Practice installing and running software
+
+---
+# 
+
+---
+# Swiss Army Knife (general purpose app)
+
+- Contains most NGS tools
+- 
 ---
 # What is JSON?
 
@@ -44,50 +62,60 @@ class: center, middle, inverse, title-slide
 - Used to access DNAnexus API servers
 
 ---
-class: center, middle
-# JSON is the lingua franca of the Internet
-## Master it, and you open the Internet up
+# Why is knowing about JSON useful?
 
+- Reading and modifying JSON is at the heart of building and running apps
+- Understanding JSON responses from the API will help you debug jobs
+- Batch submissions: running the same app on multiple files
+    - Find which jobs have failed and why
+    - Run the failed jobs again
+    
 ---
-# How is JSON used on the DNAnexus Platform?
+# Whether we use the UI or the command line, we are communicating with the platform using JSON
 
-- API requests
-  - `dx find data`
-  - `dx run` 
-- API responses
-  - Job Status (`dx watch`)
-  - Job Results 
-
----
-# Building using JSON
-  
-- Building Apps
-  - `dxapp.json` 
-  - customize your app options
-- Building Workflows
-  - `dxworkflow.json`
-  - Customizing instances for each step
-  - Specifying files/software
----
-# Some advice
-
-- Don't write JSON by hand from scratch
-- Use an Editor!
-    - Visual Studio Code
-- Use JSON checking tools to make sure your JSON is well formed
-  
 ---
 # Components of a JSON file
 
-- Containers: 
+- Object: 
   - `{}`
 - key:value pairs
   - `"$dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"`
-- Lists (much like python)
-  - Used for multiple values 
-  - `["file-G4x7GX80VBzQy64k4jzgjqgY", "file-G4x7GXQ0VBzZxFxz4fqV120B"]`
 
 .footnote[http://json-schema.org/draft-04/json-schema-core.html]
+
+---
+# key/value pairs
+
+- have the format: `"key": "value"`
+- example:
+
+```
+"dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+```
+
+---
+# Object `{}`
+
+An object contains key/value pairs. For example:
+
+```
+{ "dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"}
+```
+
+
+---
+# Nested Objects
+
+An object can also be the *value* of a key-value pair. For example:
+=======
+---
+# key/container
+
+```
+"report_html": {
+    "dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+  }
+```
 
 ---
 # Anatomy of a JSON document
@@ -102,41 +130,64 @@ class: center, middle
   }
 }
 ```
----
-# key/value pairs
-
-- have the format: `"key": "value"`
-- example:
-
-```
-"dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
-```
 
 ---
-# key/container
-
-
+# Building using JSON
+  
+- Building Apps
+  - `dxapp.json` 
+  - customize your app options
+- Building Workflows
+  - `dxworkflow.json`
+  - Customizing instances for each step
+  - Specifying files/software
 
 ---
+# How is JSON used on the DNAnexus Platform?
+
+- API requests
+  - `dx find data`
+  - `dx run` 
+- API responses
+  - Job Status (`dx watch`)
+  - Job Results 
+
+---
+# Some advice
+
+- Don't write JSON by hand from scratch
+- Use an Editor!
+    - Visual Studio Code
+- Use JSON checking tools to make sure your JSON is well formed
+  
+---
+
 # What is `jq`?
 
 - Command line utility for working with JSON files
 - Main functionality: filter
 - Lets you extract and manipulate elements from a json file
 
+
 ---
-# Install `jq` on your machine
-
-- Need to have Anaconda installed first
+# filters - get first level
 
 ```
-conda install -c conda-forge jq
-```
----
-# Download this project
-
+jq ".report_html" example.json
 ```
 
+```
+{
+  "report_html": {
+    "dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+  }
+}
+```
+
+```
+{
+"dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+}
 ```
 
 ---
@@ -175,34 +226,34 @@ jq '.stats_txt' data/example.json
 ```
 
 ---
-# filters
+# Going down a level
 
-- We can extract values for the different key pairs. 
-- We do this with filters
-- The following filter extracts
+.pull-left[
+```
+jq '.stats_txt.dnanexus_link' data/example.json
+```
+]
 
+.pull-right[
 ```
-jq '.stats_txt' data/example.json
+{
+  "stats_txt": {
+    "dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+  }
+}
 ```
+]
 
 ---
-
----
-# Format JSON: `jq .`
-
-- First step to helping you read JSON
-- Usually responses are sent as a single line
+# Actual output
 
 
 ```bash
-echo '{"title":"This is very", "description": "hard to read" }' | jq "." 
+jq '.stats_txt.dnanexus_link' data/example.json
 ```
 
 ```
-## {
-##   "title": "This is very",
-##   "description": "hard to read"
-## }
+## "file-G4x7GXQ0VBzZxFxz4fqV120B"
 ```
 
 ---
@@ -275,8 +326,102 @@ jq '.categories' data/fastqc.json
 ##   "Statistics"
 ## ]
 ```
----
 
+---
+# Piping 
+
+- Pipe the output of `dx describe` into `jq`
+- Find all outputs set for a job
+
+```
+dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .output
+```
+
+---
+# Piping `dx describe` into `jq`
+
+- Find all inputs set for a job, including default values set by the application
+
+
+```bash
+dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .input
+```
+
+```
+## {
+##   "reads": {
+##     "$dnanexus_link": "file-BQbXKk80fPFj4Jbfpxb6Ffv2"
+##   },
+##   "format": "auto",
+##   "kmer_size": 7,
+##   "nogroup": true
+## }
+```
+
+---
+# Find all inputs for an app
+
+
+```bash
+jq '.inputSpec' data/dxapp.json
+```
+
+```
+## [
+##   {
+##     "name": "mappings_cram",
+##     "label": "CRAM file",
+##     "help": "",
+##     "class": "file",
+##     "patterns": [
+##       "*.cram"
+##     ],
+##     "optional": false
+##   }
+## ]
+```
+
+---
+# Find all generated outputs for a job
+
+
+```bash
+jq '.output' data/job.json
+```
+
+```
+## {
+##   "report_html": {
+##     "$dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+##   },
+##   "stats_txt": {
+##     "$dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+##   }
+## }
+```
+
+---
+class: center, middle
+# JSON is the lingua franca of the Internet
+## Master it, and you open the Internet up
+
+---
+# Install `jq` on your machine
+
+- Need to have Anaconda installed first
+
+```
+conda install -c conda-forge jq
+```
+---
+# Clone the repository 
+
+```
+git clone https://github.com/laderast/introduction_to_json
+```
+---
+class: center, middle
+# Going Further
 
 ---
 # Things to Try
@@ -289,17 +434,26 @@ dx find executions --json | jq ".[] | .name"
 ```
 
 ```
-## "Swiss Army Knife"
-## "Swiss Army Knife"
-## "Swiss Army Knife"
-## "Samtools from Docker Image"
-## "Samtools from Docker Image"
-## "Samtools from Docker Image"
-## "Samtools from Docker Image"
-## "Samtools from Docker Image"
-## "Samtools from Docker Image"
 ## "ttyd"
 ```
+---
+# Format JSON: `jq .`
+
+- First step to helping you read JSON
+- Usually responses are sent as a single line
+
+
+```bash
+echo '{"title":"This is very", "description": "hard to read" }' | jq "." 
+```
+
+```
+## {
+##   "title": "This is very",
+##   "description": "hard to read"
+## }
+```
+
 ---
 # Get the citation for an app
 
@@ -315,35 +469,10 @@ jq '.details.citations' data/fastqc.json
 ```
 
 ---
+# Find all the first-level keys
 
-
-```bash
+```
 jq '. | keys' data/rap-jobs.json
-```
-
-```
-## [
-##   0,
-##   1,
-##   2,
-##   3,
-##   4,
-##   5,
-##   6,
-##   7,
-##   8,
-##   9,
-##   10,
-##   11,
-##   12,
-##   13,
-##   14,
-##   15,
-##   16,
-##   17,
-##   18,
-##   19
-## ]
 ```
 
 ---
@@ -1553,19 +1682,39 @@ jq ".[] | keys" data/rap-jobs.json
 ## ]
 ```
 
----
-# Cycle through the 
+a---
+# Cycle through the app names
 
 
 ```bash
-jq '.name' data/job.json  
+jq '.[].name' data/rap-jobs.json  
 ```
 
 ```
-## "FastQC Reads Quality Control"
+## "Swiss Army Knife"
+## "Swiss Army Knife"
+## "Swiss Army Knife"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "ttyd"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
+## "Samtools from Docker Image"
 ```
 
 ---
+# Find the state of all jobs
 
 
 ```bash
@@ -1598,118 +1747,12 @@ jq ".[].state" data/rap-jobs.json
 ---
 # Doing something with all of the jobs
 
-
-```bash
+```
 while IFS= read -r obj; do
     ...
-done &lt; &lt;(jq -c '.[]' state.json)
-
+done &lt; &lt;(jq -c '.[]' data/rap-jobs.json)
 ```
 
-```
-## jq: error: Could not open file state.json: No such file or directory
-```
-
----
-
-
-```bash
-jq ".[0].trueInstanceType" data/rap-jobs.json
-```
-
-```
-## "dx_s_c5.xlarge_v2"
-```
-
----
-# Piping `dx describe` into `jq`
-
-- Find all inputs set for a job, including default values set by the application
-
-
-```bash
-dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .input
-```
-
-```
-## {
-##   "reads": {
-##     "$dnanexus_link": "file-BQbXKk80fPFj4Jbfpxb6Ffv2"
-##   },
-##   "format": "auto",
-##   "kmer_size": 7,
-##   "nogroup": true
-## }
-```
-
----
-# Piping is cool
-
-- Find all outputs set for a job
-
-
-```bash
-dx describe job-G4x7G5j0B3K2FKzgP654ZqpK --json | jq -r .output
-```
-
-```
-## {
-##   "report_html": {
-##     "$dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
-##   },
-##   "stats_txt": {
-##     "$dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
-##   }
-## }
-```
-
----
-# Find all inputs for an app
-
-
-```bash
-jq '.inputSpec' data/dxapp.json
-```
-
-```
-## [
-##   {
-##     "name": "mappings_cram",
-##     "label": "CRAM file",
-##     "help": "",
-##     "class": "file",
-##     "patterns": [
-##       "*.cram"
-##     ],
-##     "optional": false
-##   }
-## ]
-```
-
----
-# Find all generated outputs for a job
-
-
-```bash
-jq '.output' data/job.json
-```
-
-```
-## {
-##   "report_html": {
-##     "$dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
-##   },
-##   "stats_txt": {
-##     "$dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
-##   }
-## }
-```
-
----
-# Why is this useful?
-
-- Reading and modifying JSON is at the heart of building apps
-- Understanding JSON responses from the API will help you debug stuff
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
