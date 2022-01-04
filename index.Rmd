@@ -35,6 +35,7 @@ style_mono_accent(
 
 # Learning Objectives
 
+1. **Review** DNAnexus architecture and **discuss** useful tools in learning the platform
 1. **Articulate** the basic elements of JSON and explain how JSON is used on the DNAnexus platform
 2. **Describe** and **read** basic JSON structures that are used on the platform
 3. **Parse** JSON errors and responses on the platform from `dx find jobs` using `jq` and pipes
@@ -45,6 +46,22 @@ style_mono_accent(
 
 - API Server
 
+---
+# `ttyd`: useful app on the platform
+
+- Lets you open up a terminal window on a DNAnexus Worker
+- Practice your DNAnexus CLI commands here
+  - `dx download`/`dx upload`
+- Practice installing and running software
+
+---
+# 
+
+---
+# Swiss Army Knife (general purpose app)
+
+- Contains most NGS tools
+- 
 ---
 # What is JSON?
 
@@ -88,7 +105,7 @@ class: center, middle
 ---
 # Components of a JSON file
 
-- Containers: 
+- Object: 
   - `{}`
 - key:value pairs
   - `"$dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"`
@@ -97,6 +114,38 @@ class: center, middle
   - `["file-G4x7GX80VBzQy64k4jzgjqgY", "file-G4x7GXQ0VBzZxFxz4fqV120B"]`
 
 .footnote[http://json-schema.org/draft-04/json-schema-core.html]
+
+---
+# key/value pairs
+
+- have the format: `"key": "value"`
+- example:
+
+```
+"dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+```
+
+---
+# Object `{}`
+
+An object contains key/value pairs. For example:
+
+```
+{ "dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"}
+```
+
+---
+
+---
+# Nested Objects
+
+An object can also be the *value* of a key-value pair. For example:
+
+```
+"report_html": {
+    "dnanexus_link": "file-G4x7GX80VBzQy64k4jzgjqgY"
+  }
+```
 
 ---
 # Anatomy of a JSON document
@@ -111,22 +160,23 @@ class: center, middle
   }
 }
 ```
----
-# key/value pairs
 
-- have the format: `"key": "value"`
-- example:
+---
+# Using JSON
+
+When you specify an app, you will be customizing a file called `dxapp.json`
 
 ```
-"dnanexus_link": "file-G4x7GXQ0VBzZxFxz4fqV120B"
+
 ```
 
----
-# key/container
-
-
 
 ---
+class: center, middle
+# Using JSON responses
+
+---
+
 # What is `jq`?
 
 - Command line utility for working with JSON files
