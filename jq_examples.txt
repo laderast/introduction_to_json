@@ -1,0 +1,23 @@
+## Example 1
+
+jq ".report_html" data/example.json
+
+## Example 2
+
+jq ".stats_txt.dnanexus_link" data/example.json
+
+## Example 3
+
+dx find data --class file –-json | jq ".[].id" 
+
+## Example 4
+
+jq -r ".input" data/job.json
+
+## Example 5
+
+jq ".[].state" data/jobs.json
+
+## Example 6
+
+jq '.[] | select (.state | contains("failed")) | .id' data/rap-jobs.json
