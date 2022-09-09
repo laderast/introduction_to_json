@@ -21,3 +21,7 @@ jq ".[].state" data/jobs.json
 ## Example 6
 
 jq '.[] | select (.state | contains("failed")) | .id' data/rap-jobs.json
+
+## Looping over data files
+
+dx find jobs --json | jq '.[] | select (.state | contains("failed")) | .id' | xargs -I % sh -c "dx run --clone %"
