@@ -16,7 +16,7 @@ jq -r ".input" data/job.json
 
 ## Example 5
 
-jq ".[].state" data/jobs.json
+jq ".[].state" data/rap-jobs.json
 
 ## Example 6
 
