@@ -7,6 +7,8 @@ jq ".report_html" data/example.json
 jq ".stats_txt.dnanexus_link" data/example.json
 
 ## Example 3
+# In case this doesn't work on a mac, paste using cmd-option-shift-V (pastes literal text)
+# Worst case scenario: delete the hyphens and retype them.
 
 dx find data --class file –-json | jq ".[].id" 
 
